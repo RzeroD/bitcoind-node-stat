@@ -40,7 +40,7 @@
  * To gather data automatically from your bitcoin daemon you need to set
  * up a cronjob like:
  * 
- * "* * * * * /usr/bin/php /var/www/htdocs/bitcoin-simple-stat.php"
+ * "* * * * * /usr/bin/php /var/www/htdocs/bitcoind-node-stat.php"
  * 
  * Another thing you might want is to make the script available to the 
  * public on your ip/hostname/whatever
@@ -53,8 +53,8 @@
  *   --
  *   RewriteEngine on
  *
- *   RewriteCond %{REQUEST_URI} !^/bitcoind-simple-stat.php$
- *   RewriteRule / /bitcoind-simple-stat.php [NC,L]
+ *   RewriteCond %{REQUEST_URI} !^/bitcoind-node-stat.php$
+ *   RewriteRule / /bitcoind-node-stat.php [NC,L]
  *   --
  * 
  * The data file needs to be writable by the cron user and readable by
@@ -76,7 +76,7 @@ $config["node-ipv6"] = "2a02:dead:beed:affe::1";
 $config["rpc-command"] = "sudo -u bitcoin bitcoin-cli";
 
 // data file
-$config["data-file"] = "/tmp/bitcoin-simple-stat.json";
+$config["data-file"] = "/tmp/bitcoin-node-stat.json";
 
 // CRONJOB
 
@@ -459,8 +459,8 @@ div.centered {
 		</div>
 		<div class="footer">
 			<div class="centered">
-				<div>Made with love by Jan Peter Koenig &lt;<a target="_blank" href="mailto://public@janpeterkoenig.com">public@janpeterkoenig.com</a>&gt;.</div>
-				<div>If you want to buy me a cola here is my address: <a target="_blank" href="bitcoin:1N2RLARDak5ZbTB4LzuDvHut7om97PWDUF">1N2RLARDak5ZbTB4LzuDvHut7om97PWDUF</a></div>
+				<div>Made with love by Jan Peter Koenig &lt;<a target="_blank" href="mailto://public@janpeterkoenig.com">public@janpeterkoenig.com</a>&gt;. Hosted on <a href="https://github.com/suthernfriend/bitcoind-node-stat">GitHub</a></div>
+				<div>If you want to buy me a cola - i love cola - especially cherry cola - here is my address: <a target="_blank" href="bitcoin:1N2RLARDak5ZbTB4LzuDvHut7om97PWDUF">1N2RLARDak5ZbTB4LzuDvHut7om97PWDUF</a></div>
 				<div>This software is licensed under the <a target="_blank" href="http://directory.fsf.org/wiki/License:X11">X11 License</a>. Feel free to use, redistribute and change everything.</div>
 				<div>
 					Glyphicons by <a href="https://glyphicons.com">Jan Kovarik</a>, licensed under <a target="_blank" href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>. 

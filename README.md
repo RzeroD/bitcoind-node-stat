@@ -24,7 +24,7 @@ You should set your "node nick name", country and ips below
 To gather data automatically from your bitcoin daemon you need to set
 up a cronjob like:
 
-```* * * * * /usr/bin/php /var/www/htdocs/bitcoin-simple-stat.php```
+```* * * * * /usr/bin/php /var/www/htdocs/bitcoin-node-stat.php```
 
 Another thing you might want is to make the script available to the 
 public on your ip/hostname/whatever
@@ -37,8 +37,8 @@ For Apache:
 ```apache
 RewriteEngine on
  
-RewriteCond %{REQUEST_URI} !^/bitcoind-simple-stat.php$
-RewriteRule / /bitcoind-simple-stat.php [NC,L]
+RewriteCond %{REQUEST_URI} !^/bitcoind-node-stat.php$
+RewriteRule / /bitcoind-node-stat.php [NC,L]
 ```
 
 The data file needs to be writable by the cron user and readable by
