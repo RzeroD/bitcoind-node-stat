@@ -169,7 +169,7 @@ function ping_class($ping) {
 
 foreach ($data["peerinfo"] as $peer) 
 {
-	$heights[] = $peer["startingheight"];
+	$heights[] = $peer["synced_headers"];
 	
 	$addr = "";
 	if (strpos($peer["addr"], "[") !== false) {
@@ -191,7 +191,7 @@ foreach ($data["peerinfo"] as $peer)
 		"tx" => $peer["bytessent"],
 		"rx" => $peer["bytesrecv"],
 		"inbound" => $peer["inbound"],
-		"height" => $peer["startingheight"]
+		"height" => $peer["synced_headers"]
 	];
 }
 
