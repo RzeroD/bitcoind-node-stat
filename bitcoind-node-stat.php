@@ -170,10 +170,12 @@ foreach ($data["peerinfo"] as $peer)
 		$plainaddr = substr($peer["addr"], 0, strpos($peer["addr"], ":"));
 	}
 	
+	$activity = time() + ($data["time"] - min([ $peer["lastsend"], $peer["lastrecv"] ]));
+	
 	$peers[] = [
 		"addr" => $addr,
 		"plainaddr" => $plainaddr,
-		"activity" => time_elapsed_string(min([ $peer["lastsend"], $peer["lastrecv"] ])),
+		"activity" => time_elapsed_string($activity),
 		"conntime" => time_elapsed_string($peer["conntime"]),
 		"ping" => $peer["pingtime"] * 1000,
 		"version" => $peer["subver"],
