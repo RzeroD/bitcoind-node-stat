@@ -17,7 +17,7 @@ keep it very simple.
 * Cron Service (p.e. cronie)
 
 Originally this script was intended to run on linux with apache and
-cronie. Never the less there should be a way to use it on windows.
+cronie. Nevertheless there should be a way to use it on windows.
 
 The PHP script itself has no dependencies.
 
@@ -34,22 +34,28 @@ with the configuration options.
 Configuration options are:
 
 ```$config["node-name"] = "My Server";``` 
+
 The (nick-)name of the server
 
 ```$config["node-country"] = "gb";``` 
+
 Country code of the server
 
 ```$config["node-ipv4"] = "12.34.56.78";```
+
 IPv4 Address of the server
 
 ```$config["node-ipv4"] = "2a02:DEAD:BEEF:8008::1";```
+
 IPv6 Address of the server
 
 ```$config["rpc-command"] = "/usr/local/bin/bitcoin-cli";```
+
 Bitcoin rpc client command path. Can include other commands: p.e.
 ```sudo -u bitcoin /usr/local/bin/bitcoin-cli```
 
 ```$config["data-file"] = "/tmp/bitcoind-node-stat.json";```
+
 Temporary file to store recent node information. The file must be
 writable by the cronjob and readable by the webserver.
 
