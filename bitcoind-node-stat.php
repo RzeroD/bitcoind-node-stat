@@ -215,7 +215,7 @@ $template = [
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>bitcoind - <?php echo $template["node-name"]; ?> Node Statistics Page</title>
+		<title>bitcoind - <?php echo $template["node-name"]; ?> Node Statistics</title>
 		<meta charset="utf-8">
 		<link href="https://fonts.googleapis.com/css?family=Titillium+Web" rel="stylesheet">
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/css/flag-icon.css" rel="stylesheet">
@@ -371,7 +371,7 @@ div.centered {
 	<body>
 		<div class="header">
 			<div class="centered">
-				<div class="title">bitcoind - Node Statistics Page</div>
+				<div class="title">bitcoin - Node Statistics</div>
 			</div>
 		</div>
 		<div class="content">
