@@ -356,6 +356,14 @@ div.centered {
 .text-warning { color: #B67609; }
 .text-ok { color: #005800; }
 
+.peer-info td:nth-child(1) {
+	width: 20px;
+}
+
+.peer-info td:nth-child(2) {
+	width: 25px;
+}
+
 		</style>
 	</head>
 	<body>
