@@ -8,6 +8,10 @@ intentionally.
 The script has no dependencies (only from some cdn for 
 jquery, glyphicons)
 
+## Live Demo
+
+http://5.45.104.83/
+
 ## Requirements
 
 Should run with every php installation above (including) version 5
@@ -20,7 +24,7 @@ You should set your "node nick name", country and ips below
 To gather data automatically from your bitcoin daemon you need to set
 up a cronjob like:
 
-	*** /usr/bin/php /var/www/htdocs/bitcoin-simple-stat.php
+```* * * * * /usr/bin/php /var/www/htdocs/bitcoin-simple-stat.php```
 
 Another thing you might want is to make the script available to the 
 public on your ip/hostname/whatever
