@@ -67,16 +67,16 @@
 // configuration
 
 // node settings
-$config["node-name"] = "your bitcoind node";
+$config["node-name"] = "Your Bitcoin Node";
 $config["node-country"] = "ck";
-$config["node-ipv4"] = "5.45.104.83";
-$config["node-ipv6"] = "2a03:4000:6:12e7::1";
+$config["node-ipv4"] = "123.45.67.89";
+$config["node-ipv6"] = "2a02:dead:beed:affe::1";
 
 // base command for bitcoin-cli
-$config["rpc-command"] = "ssh brombeere sudo -u bitcoin bitcoin-cli";
+$config["rpc-command"] = "sudo -u bitcoin bitcoin-cli";
 
 // data file
-$config["data-file"] = "/opt/bitcoin-simple-stat.json";
+$config["data-file"] = "/tmp/bitcoin-simple-stat.json";
 
 // CRONJOB
 
