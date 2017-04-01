@@ -286,6 +286,7 @@ div.wrapper-peer-info {
 	font-size: 24px;
 	vertical-align: middle;
 	padding-left: 4px;
+	max-width: 100px;
 }
 
 .node-details .flag-icon {
@@ -447,6 +448,8 @@ div.centered {
 
 .peer-info td, th {
 	padding-left: 5px;
+	max-width: 300px;
+	overflow: hidden;
 }
 
 .peer-info td:nth-child(1) {
@@ -455,6 +458,14 @@ div.centered {
 
 .peer-info td:nth-child(2) {
 	width: 25px;
+}
+
+.peer-info td:nth-child(3) {
+	white-space: nowrap;
+}
+
+.peer-info td:nth-child(5) {
+	max-width: 125px;
 }
 
 }
