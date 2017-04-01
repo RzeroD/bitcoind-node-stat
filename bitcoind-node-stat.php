@@ -269,7 +269,7 @@ html, body {
 }
 
 div.wrapper-peer-info {
-	overflow: scroll;
+	overflow: hidden;
 	width: 100%;
 }
 
