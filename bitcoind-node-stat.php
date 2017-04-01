@@ -23,47 +23,6 @@
  * 
  */
 
-/**
- * The idea behind this PHP script is to simply have only one file
- * serving infomation about a bitcoin node.
- * The use of inline styles, templates and scripts is done 
- * intentionally.
- * 
- * The script has no dependencies (only from some cdn for 
- * jquery, glyphicons)
- * 
- * Should run with every php installation above (including) version 5
- * (not completely tested)
- * 
- * You should set your "node nick name", country and ips below
- * 
- * To gather data automatically from your bitcoin daemon you need to set
- * up a cronjob like:
- * 
- * "* * * * * /usr/bin/php /var/www/htdocs/bitcoind-node-stat.php"
- * 
- * Another thing you might want is to make the script available to the 
- * public on your ip/hostname/whatever
- * 
- * For Apache:
- * 
- *   Depending on your configuration you can rename the script or use a 
- *   .htaccess file:
- * 
- *   --
- *   RewriteEngine on
- *
- *   RewriteCond %{REQUEST_URI} !^/bitcoind-node-stat.php$
- *   RewriteRule / /bitcoind-node-stat.php [NC,L]
- *   --
- * 
- * The data file needs to be writable by the cron user and readable by
- * the webserver and php.
- * 
- * If you are using systemd on your server beware of the PrivateTmp 
- * service option when you use /tmp as storage.
- */
-
 // configuration
 
 require_once("config.php");
@@ -92,10 +51,57 @@ if (php_sapi_name() == "cli")
 		"connectioncount" => exec_command("getconnectioncount", false),
 		"networkinfo" => exec_command("getnetworkinfo"),
 		"info" => exec_command("getinfo"),
-		"time" => time()
+		"time" => time(),
+		"ipv6" => [],
+		"ipv4" => []
 	];
+
+	// ips
+
+	foreach ($dataToWrite["networkinfo"]["localaddresses"] as $addr) {
+		if (strpos($addr["address"], ":") !== false)
+			$dataToWrite["ipv6"][] = $addr["address"];
+		else
+			$dataToWrite["ipv4"][] = $addr["address"];
+	}
+
+	// hostname
+	
+	foreach (array_merge($dataToWrite["ipv4"], $dataToWrite["ipv6"]) as $a) {
+		$host = gethostbyaddr($a);
+		if ($host != $a) {
+			$dataToWrite["host"] = $host;
+			break;
+		}
+	}
+	
+	// country
+
+	foreach (array_merge($dataToWrite["ipv4"], $dataToWrite["ipv6"]) as $a) {
+		$f = @file_get_contents("http://freegeoip.net/json/" . $a);
+		if ($f !== "false") {
+			$json = json_decode($f, true);
+			$dataToWrite["country"] = $json["country_code"];
+			break;
+		}
+	}
+		
 	
 	file_put_contents($config["data-file"], json_encode($dataToWrite));
+	
+	exit(0);
+}
+
+// reverse lookup
+
+if (isset($_GET["ip"])) {
+	
+	header("Content-Type: application/json");
+
+	if (filter_var($_GET["ip"], FILTER_VALIDATE_IP) === false)
+		die(json_encode(array("error" => "Invalid input")));
+	
+	echo json_encode(array("host" => gethostbyaddr($_GET["ip"])));
 	
 	exit(0);
 }
@@ -139,6 +145,7 @@ function time_elapsed_string($datetime, $full = false)
         'i' => 'minute',
         's' => 'second',
     );
+    
     foreach ($string as $k => &$v) {
         if ($diff->$k) {
             $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
@@ -183,17 +190,17 @@ foreach ($data["peerinfo"] as $peer)
 		"tx" => $peer["bytessent"],
 		"rx" => $peer["bytesrecv"],
 		"inbound" => $peer["inbound"],
-		"height" => $peer["synced_headers"]
+		"height" => $peer["synced_headers"] == -1 ? "N/A" : $peer["synced_headers"]
 	];
 }
 
 // template following
 
 $template = [
-	"node-ipv4" => $config["node-ipv4"],
-	"node-ipv6" => $config["node-ipv6"],
-	"node-name" => $config["node-name"],
-	"node-country" => $config["node-country"],
+	"node-ipv4" => implode(", ", $data["ipv4"]),
+	"node-ipv6" => implode(", ", $data["ipv6"]),
+	"node-name" => $data["host"],
+	"node-country" => strtolower($data["country"]),
 	"node-updated" => time_elapsed_string($data["time"]),
 	"node-version" => $data["networkinfo"]["subversion"] . " (" . $data["info"]["version"] . ")",
 	"node-height" => $data["info"]["blocks"],
@@ -212,7 +219,8 @@ $template = [
 		<link href="https://fonts.googleapis.com/css?family=Titillium+Web" rel="stylesheet">
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/css/flag-icon.css" rel="stylesheet">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-		
+		<link rel="favicon" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/2.8.0/flags/4x3/<?php echo $template["node-country"]; ?>.svg">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<style>
 * {
 	font-family: "Titillium Web", sans-serif;
@@ -226,12 +234,6 @@ $template = [
 	text-align: center;
 }
 
-div.centered {
-	display: inline-block;
-	width: 1024px;
-	text-align: left;
-	padding: 0px;
-}
 
 .header div.title {
 	color: #FFF;
@@ -252,6 +254,139 @@ div.centered {
 	text-align: center;
 	padding-bottom: 60px !important;
 }
+
+@media only screen and (max-width: 1023px) {
+
+div.centered {
+	display: inline-block;
+	width: 100%;
+	text-align: left;
+	padding: 0px;
+}
+
+html, body {
+	width: 100%;
+}
+
+div.wrapper-peer-info {
+	overflow: scroll;
+	width: 100%;
+}
+
+.node-details div {
+	display: inline-block;
+}
+
+.node-details {
+	margin-left: -39px;
+	margin-bottom: 20px;
+}
+
+.node-details div:last-child {
+	font-size: 24px;
+	vertical-align: middle;
+	padding-left: 4px;
+}
+
+.node-details .flag-icon {
+	width: 30px;
+	height: 22px;
+	vertical-align: middle;
+}
+
+.node-info .left-info, .node-info .right-info {
+	padding: 20px 80px 0px;
+}
+
+.peer-info table {
+	display: block;
+	position: relative;
+	overflow: hidden;
+}
+
+.peer-info th {
+	display: none;
+}
+
+.peer-info td {
+	float: left;
+}
+
+.peer-info .title {
+	margin-left: 40px;
+}
+
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1023px) {
+
+.peer-info td:nth-child(1) { margin-top: 20px; margin-left: 10px; width: 40px; }
+.peer-info td:nth-child(2) { margin-top: 20px; width: 40px; }
+.peer-info td:nth-child(3) { margin-top: 20px; font-weight: bold; width: auto; }
+.peer-info td:nth-child(4) { width: 170px; margin-left: 90px; clear: left; }
+.peer-info td:nth-child(4):before { color: rgb(51, 51, 51); content: "Connected: "; }
+.peer-info td:nth-child(5) { width: 240px; }
+.peer-info td:nth-child(5):before { color: rgb(51, 51, 51); content: "Version: "; }
+.peer-info td:nth-child(6) { width: 200px; }
+.peer-info td:nth-child(6):before { color: rgb(51, 51, 51); content: "Activity: "; }
+.peer-info td:nth-child(7) { width: 170px; margin-left: 90px; clear: left; }
+.peer-info td:nth-child(7):before { color: rgb(51, 51, 51); content: "Ping (ms): "; }
+.peer-info td:nth-child(8) { width: 240px; }
+.peer-info td:nth-child(8):before { color: rgb(51, 51, 51); content: "TX/RX (bytes): "; }
+.peer-info td:nth-child(9) { width: 200px; }
+.peer-info td:nth-child(9):before { color: rgb(51, 51, 51); content: "Height: "; }
+
+}
+
+@media only screen and (min-width: 576px) and (max-width: 767px) {
+
+.peer-info td:nth-child(1) { margin-top: 20px; margin-left: 10px; width: 40px; }
+.peer-info td:nth-child(2) { margin-top: 20px; width: 40px; }
+.peer-info td:nth-child(3) { margin-top: 20px; font-weight: bold; width: auto; }
+.peer-info td:nth-child(4) { width: 240px; margin-left: 90px; clear: left; }
+.peer-info td:nth-child(4):before { color: rgb(51, 51, 51); content: "Connected: "; }
+.peer-info td:nth-child(5) { width: 200px; }
+.peer-info td:nth-child(5):before { color: rgb(51, 51, 51); content: "Version: "; }
+.peer-info td:nth-child(6) { width: 240px; margin-left: 90px; clear: left; }
+.peer-info td:nth-child(6):before { color: rgb(51, 51, 51); content: "Activity: "; }
+.peer-info td:nth-child(7) { width: 200px; }
+.peer-info td:nth-child(7):before { color: rgb(51, 51, 51); content: "Ping (ms): "; }
+.peer-info td:nth-child(8) { width: 240px; margin-left: 90px; clear: left; }
+.peer-info td:nth-child(8):before { color: rgb(51, 51, 51); content: "TX/RX (bytes): "; }
+.peer-info td:nth-child(9) { width: 200px; }
+.peer-info td:nth-child(9):before { color: rgb(51, 51, 51); content: "Height: "; }
+
+}
+
+@media only screen and (max-width: 575px) {
+
+.peer-info td:nth-child(1) { margin-top: 20px; margin-left: 10px; width: 40px; }
+.peer-info td:nth-child(2) { margin-top: 20px; width: 40px; }
+.peer-info td:nth-child(3) { margin-top: 20px; font-weight: bold; width: auto; width: 250px; overflow: hidden; }
+.peer-info td:nth-child(4) { width: 240px; margin-left: 90px; clear: left; }
+.peer-info td:nth-child(4):before { color: rgb(51, 51, 51); content: "Connected: "; }
+.peer-info td:nth-child(5) { width: 240px; margin-left: 90px; clear: left;  }
+.peer-info td:nth-child(5):before { color: rgb(51, 51, 51); content: "Version: "; }
+.peer-info td:nth-child(6) { width: 240px; margin-left: 90px; clear: left; }
+.peer-info td:nth-child(6):before { color: rgb(51, 51, 51); content: "Activity: "; }
+.peer-info td:nth-child(7) { width: 240px; margin-left: 90px; clear: left;  }
+.peer-info td:nth-child(7):before { color: rgb(51, 51, 51); content: "Ping (ms): "; }
+.peer-info td:nth-child(8) { width: 240px; margin-left: 90px; clear: left; }
+.peer-info td:nth-child(8):before { color: rgb(51, 51, 51); content: "TX/RX (bytes): "; }
+.peer-info td:nth-child(9) { width: 240px; margin-left: 90px; clear: left;  }
+.peer-info td:nth-child(9):before { color: rgb(51, 51, 51); content: "Height: "; }
+
+}
+
+@media only screen and (min-width: 1024px) {
+
+div.centered {
+	display: inline-block;
+	width: 1024px;
+	text-align: left;
+	padding: 0px;
+}
+
 
 .node-info .left-info {
 	width: 500px;
@@ -309,6 +444,21 @@ div.centered {
 	display: inline-block;
 }
 
+
+.peer-info td, th {
+	padding-left: 5px;
+}
+
+.peer-info td:nth-child(1) {
+	width: 20px;
+}
+
+.peer-info td:nth-child(2) {
+	width: 25px;
+}
+
+}
+
 .peer-info {
 	margin-top: 30px;
 }
@@ -326,7 +476,7 @@ div.centered {
 	width: 100%;
 }
 
-.flag-icon {
+.peer-info .flag-icon {
 	border: 1px solid #eeeeee;
 }
 
@@ -357,14 +507,6 @@ div.centered {
 .text-danger { color: #B4090D; }
 .text-warning { color: #B67609; }
 .text-ok { color: #005800; }
-
-.peer-info td:nth-child(1) {
-	width: 20px;
-}
-
-.peer-info td:nth-child(2) {
-	width: 25px;
-}
 
 		</style>
 	</head>
@@ -421,7 +563,7 @@ div.centered {
 					</div>
 				</div>
 			</div>
-			<div>
+			<div class="wrapper-peer-info">
 				<div class="peer-info centered">
 					<div class="title">Connections</div>
 					<div class="connections">
@@ -436,7 +578,6 @@ div.centered {
 								<th>Ping (ms)</th>
 								<th>TX/RX (bytes)</th>
 								<th>Height</th>
-								<th>Banscore</th>
 							</tr>
 							<?php foreach ($template["peers"] as $peer) { ?>
 							<tr>
@@ -448,8 +589,10 @@ div.centered {
 								<td><?php echo $peer["activity"]; ?></td>
 								<td class="<?php echo ping_class($peer["ping"]) ?>"><?php echo $peer["ping"]; ?></td>
 								<td><?php echo format_bytes($peer["tx"]); ?> / <?php echo format_bytes($peer["tx"]); ?></td>
-								<td class="<?php if ($peer["height"] < $template["network-height"]) echo "text-danger"; else echo "text-ok"; ?>"><?php echo $peer["height"]; ?></td>
-								<td class="<?php if ($peer["banscore"] > 0.01) echo "text-danger"; else echo "text-ok"; ?>"><?php echo $peer["banscore"] ?></td>
+								<td class="<?php 
+								if ($peer["height"] == "N/A") echo "text-warning";
+								elseif ($peer["height"] < $template["network-height"]) echo "text-danger"; 
+								else echo "text-ok"; ?>"><?php echo $peer["height"]; ?></td>
 							</tr>
 							<?php } ?> 
 						</table>
@@ -478,7 +621,7 @@ $("[data-dns]").each(function () {
 	var self = this;
 	var ip = $(this).attr("data-dns");
 	
-	$.getJSON("http://5.45.104.83/reverselookup.php?ip=" + ip, function (data) {
+	$.getJSON("?ip=" + ip, function (data) {
 		if (data.error === undefined)
 			$(self).text(data.host);
 	});

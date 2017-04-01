@@ -13,7 +13,7 @@ keep it very simple.
 ### Requirements
 
 * Web Server able to serve PHP
-* PHP Version 5 or higher (Haven't tested with 4, but should work)
+* PHP Version 5.4 or higher
 * Cron Service (p.e. cronie)
 
 Originally this script was intended to run on linux with apache and
@@ -35,19 +35,19 @@ Configuration options are:
 
 ```$config["node-name"] = "My Server";``` 
 
-The (nick-)name of the server
+The (nick-)name of the server (If not set will be the reverse DNS entry)
 
 ```$config["node-country"] = "gb";``` 
 
-Country code of the server
+Country code of the server (If not set will be auto-detected)
 
 ```$config["node-ipv4"] = "12.34.56.78";```
 
-IPv4 Address of the server
+IPv4 Address of the server (If not set will take IPs from bitcoind)
 
 ```$config["node-ipv4"] = "2a02:DEAD:BEEF:8008::1";```
 
-IPv6 Address of the server
+IPv6 Address of the server (If not set will take IPs from bitcoind)
 
 ```$config["rpc-command"] = "/usr/local/bin/bitcoin-cli";```
 
