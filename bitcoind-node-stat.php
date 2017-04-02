@@ -96,17 +96,37 @@ if (php_sapi_name() == "cli")
 
 if (isset($_POST["ips"])) {
 	
+	
 	header("Content-Type: application/json");
 
 	$resolved = [];
+	$cache = [];
+	$cacheAvailable = false;
 	
+	if (file_exists($config["dns-cache-file"])) {
+		$cache = json_decode(file_get_contents($config["dns-cache-file"]), true);
+		$cacheAvailable = true;
+	}
+		
 	foreach ($_POST["ips"] as $ip) {
 
 		if (filter_var($ip, FILTER_VALIDATE_IP) === false)
 			die(json_encode(array("error" => "Invalid input")));
 		
+		if ($cacheAvailable) {
+			if (isset($cache[$ip])) {
+				$resolved[$ip] = $cache[$ip];
+				continue;
+			}
+		}
+		
 		$resolved[$ip] = gethostbyaddr($ip);
 	}
+	
+	// write cache;
+	$newCache = array_merge($resolved, $cache);
+	
+	file_put_contents($config["dns-cache-file"], json_encode($newCache));
 	
 	echo json_encode($resolved);
 	
