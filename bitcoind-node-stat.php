@@ -27,6 +27,18 @@
 
 require_once("config.php");
 
+
+//.wrapper { background-color: #394286; }
+//.header { background-color: #181F58; }
+
+$colors = [
+	[ "#394286", "#181F58" ],
+	[ "#9e5656", "#581818" ]
+];
+
+srand(time());
+$color = $colors[rand(0, 1)];
+
 // CRONJOB
 
 function exec_command($command, $json = true)
@@ -258,12 +270,14 @@ $template = [
 	padding: 0px;
 }
 
+
+.wrapper { background-color: <?php echo $color[0]; ?>; }
+.header { background-color: <?php echo $color[1]; ?>; }
+
 .header {
-	background-color: #181F58;
 	height: 80px;
 	text-align: center;
 }
-
 
 .header div.title {
 	color: #FFF;
@@ -273,10 +287,6 @@ $template = [
 
 .content {
 	text-align: center;
-}
-
-.wrapper {
-	background-color: #394286;
 }
 
 .node-info {
@@ -665,15 +675,6 @@ $("[data-dns]").each(function () {
 	ips.push($(this).attr("data-dns"));
 });
 
-/*
-
-	
-	
-	$.getJSON("?ip=" + ip, function (data) {
-		if (data.error === undefined)
-			$(self).text(data.host);
-	});
-	*/
 
 $.post("", { "ips": ips }, function (data) {
 	$("[data-dns]").each(function () {
@@ -686,11 +687,9 @@ $.post("", { "ips": ips }, function (data) {
 $("[data-ip]").each(function () {
 	var self = this;
 	$.getJSON("https://freegeoip.net/json/" + $(this).attr("data-ip"), function (data) {
-		console.log(data);
+		
 		$(self).html("<span class=\"flag-icon flag-icon-" + data.country_code.toLowerCase() + "\"></span>");
-		
 		var title = "";
-		
 		if (data.city != "")
 			title += data.city + ", ";
 		if (data.region_name != "")
