@@ -172,9 +172,12 @@ foreach ($data["peerinfo"] as $peer)
 	if (strpos($peer["addr"], "[") !== false) {
 		$addr = str_replace([ "[", "]" ], [ "", "" ], $peer["addr"]); 
 		$plainaddr = substr($peer["addr"], 1, strpos($peer["addr"], "]") - 1);
-	} else {
+	} else if (strpos($peer["addr"], ":") !== false) {
 		$addr = str_replace(":8333", "", $peer["addr"]);
 		$plainaddr = substr($peer["addr"], 0, strpos($peer["addr"], ":"));
+	} else {
+		$addr = $peer["addr"];
+		$plainaddr = $peer["addr"];
 	}
 	
 	$activity = time() + ($data["time"] - min([ $peer["lastsend"], $peer["lastrecv"] ]));
