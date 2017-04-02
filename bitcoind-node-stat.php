@@ -466,6 +466,7 @@ div.centered {
 
 .peer-info td:nth-child(5) {
 	max-width: 125px;
+	white-space: nowrap;
 }
 
 }
@@ -599,7 +600,7 @@ div.centered {
 								<td><?php echo $peer["version"]; ?></td>
 								<td><?php echo $peer["activity"]; ?></td>
 								<td class="<?php echo ping_class($peer["ping"]) ?>"><?php echo $peer["ping"]; ?></td>
-								<td><?php echo format_bytes($peer["tx"]); ?> / <?php echo format_bytes($peer["tx"]); ?></td>
+								<td><?php echo format_bytes($peer["tx"]); ?> / <?php echo format_bytes($peer["rx"]); ?></td>
 								<td class="<?php 
 								if ($peer["height"] == "N/A") echo "text-warning";
 								elseif ($peer["height"] < $template["network-height"]) echo "text-danger"; 
