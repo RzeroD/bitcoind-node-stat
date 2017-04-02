@@ -626,7 +626,7 @@ div.centered {
 							<tr>
 								<td><span class="glyphicon glyphicon-<?php echo $peer["inbound"] ? "menu-left inbound" : "menu-right outbound" ?>"></span></td>
 								<td data-ip="<?php echo $peer["plainaddr"] ?>"></td>
-								<td data-dns="<?php echo $peer["plainaddr"] ?>"><?php echo $peer["addr"]; ?></td>
+								<td data-dns="<?php echo $peer["plainaddr"] ?>" title="<?php echo $peer["addr"]; ?>"><?php echo $peer["addr"]; ?></td>
 								<td><?php echo $peer["conntime"]; ?></td>
 								<td><?php echo $peer["version"]; ?></td>
 								<td><?php echo $peer["activity"]; ?></td>
@@ -687,7 +687,19 @@ $.post("", { "ips": ips }, function (data) {
 $("[data-ip]").each(function () {
 	var self = this;
 	$.getJSON("https://freegeoip.net/json/" + $(this).attr("data-ip"), function (data) {
+		console.log(data);
 		$(self).html("<span class=\"flag-icon flag-icon-" + data.country_code.toLowerCase() + "\"></span>");
+		
+		var title = "";
+		
+		if (data.city != "")
+			title += data.city + ", ";
+		if (data.region_name != "")
+			title += data.region_name + ", ";
+		title += data.country_name;
+
+		$(self).attr("title", title);
+		
 	});
 });
 
