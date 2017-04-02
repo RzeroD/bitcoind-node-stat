@@ -94,14 +94,21 @@ if (php_sapi_name() == "cli")
 
 // reverse lookup
 
-if (isset($_GET["ip"])) {
+if (isset($_POST["ips"])) {
 	
 	header("Content-Type: application/json");
 
-	if (filter_var($_GET["ip"], FILTER_VALIDATE_IP) === false)
-		die(json_encode(array("error" => "Invalid input")));
+	$resolved = [];
 	
-	echo json_encode(array("host" => gethostbyaddr($_GET["ip"])));
+	foreach ($_POST["ips"] as $ip) {
+
+		if (filter_var($ip, FILTER_VALIDATE_IP) === false)
+			die(json_encode(array("error" => "Invalid input")));
+		
+		$resolved[$ip] = gethostbyaddr($ip);
+	}
+	
+	echo json_encode($resolved);
 	
 	exit(0);
 }
@@ -631,17 +638,30 @@ div.centered {
 		<script>
 $(document).ready(function () {
 
+var ips = [];
 
 $("[data-dns]").each(function () {
 	var self = this;
-	var ip = $(this).attr("data-dns");
+	ips.push($(this).attr("data-dns"));
+});
+
+/*
+
+	
 	
 	$.getJSON("?ip=" + ip, function (data) {
 		if (data.error === undefined)
 			$(self).text(data.host);
 	});
+	*/
 
-});
+$.post("", { "ips": ips }, function (data) {
+	$("[data-dns]").each(function () {
+		var ip = $(this).attr("data-dns");
+		if (data[ip] != undefined) 
+			$(this).text(data[ip]);
+	});
+}, "json");
 
 $("[data-ip]").each(function () {
 	var self = this;
