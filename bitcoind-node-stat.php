@@ -117,6 +117,7 @@ if (isset($_POST["ips"])) {
 	
 	if (file_exists($config["dns-cache-file"])) {
 		$cache = json_decode(file_get_contents($config["dns-cache-file"]), true);
+		if (!is_array($cache)) $cache = [];
 		$cacheAvailable = true;
 	}
 		
@@ -137,7 +138,7 @@ if (isset($_POST["ips"])) {
 	
 	// write cache;
 	$newCache = array_merge($resolved, $cache);
-		
+
 	file_put_contents($config["dns-cache-file"], json_encode($newCache));
 	
 	echo json_encode($resolved);
